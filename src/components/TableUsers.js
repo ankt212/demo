@@ -4,19 +4,26 @@ import { fetchAllUser } from "../services/UserService";
 import ReactPaginate from "react-paginate";
 import ModalAddNew from "./ModalAddNews";
 import ModalEditUser from "./ModalEditUser";
+import ModalConfirm from "./ModalConfirm";
+import _ from "lodash";
 
 const TableUsers = (props) => {
   const [listUsers, setListUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+
   const [showModalAddNew, setShowModalAddNew] = useState(false);
+
   const [showModalEditUser, setShowModalEditUser] = useState(false);
   const [dataUserEdit, setDataUserEdit] = useState({});
-  const handleCloseAdd = () => {
+
+  const [showModalDeleteUser, setModalDeleteUser] = useState(false);
+  const [dataDeleteUser, setDataDeleteUser] = useState({});
+
+  const handleClose = () => {
     setShowModalAddNew(false);
-  };
-  const handleCloseEdit = () => {
     setShowModalEditUser(false);
+    setModalDeleteUser(false);
   };
   const hanldeAddNewUser = () => {
     setShowModalAddNew(true);
@@ -49,6 +56,23 @@ const TableUsers = (props) => {
     setDataUserEdit(user);
     setShowModalEditUser(true);
   };
+
+  const handleDeleteUser = (user) => {
+    setDataDeleteUser(user);
+    setModalDeleteUser(true);
+  };
+  const handleEditUserFromModal = (user) => {
+    let cloneListUsers = _.cloneDeep(listUsers);
+    let index = listUsers.findIndex((item) => item.id === user.id);
+    cloneListUsers[index].first_name = user.first_name;
+    setListUsers(cloneListUsers);
+  };
+
+  const handleDeleteUserFromModal = (user) => {
+    let cloneListUsers = _.cloneDeep(listUsers);
+    cloneListUsers = cloneListUsers.filter((item) => item.id !== user.id);
+    setListUsers(cloneListUsers);
+  };
   return (
     <>
       <div className="my-3 add-new">
@@ -72,9 +96,9 @@ const TableUsers = (props) => {
         <tbody>
           {listUsers &&
             listUsers.length > 0 &&
-            listUsers.map((item) => {
+            listUsers.map((item, index) => {
               return (
-                <tr key={item.id}>
+                <tr key={`key ${index}`}>
                   <td>{item.id}</td>
                   <td>{item.email}</td>
                   <td>{item.first_name}</td>
@@ -86,7 +110,12 @@ const TableUsers = (props) => {
                     >
                       Edit
                     </button>
-                    <button className="btn btn-danger">Delete</button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteUser(item)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               );
@@ -113,14 +142,20 @@ const TableUsers = (props) => {
       />
       <ModalAddNew
         show={showModalAddNew}
-        handleClose={handleCloseAdd}
+        handleClose={handleClose}
         handleUpdateTable={handleUpdateTable}
       />
       <ModalEditUser
         show={showModalEditUser}
         dataUserEdit={dataUserEdit}
-        handleClose={handleCloseEdit}
-        handleUpdateTable={handleUpdateTable}
+        handleClose={handleClose}
+        handleEditUserFromModal={handleEditUserFromModal}
+      />
+      <ModalConfirm
+        show={showModalDeleteUser}
+        handleClose={handleClose}
+        dataDeleteUser={dataDeleteUser}
+        handleDeleteUserFromModal={handleDeleteUserFromModal}
       />
     </>
   );
